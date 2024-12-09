@@ -89,7 +89,7 @@ class Slider(QWidget):
         self.display = QLineEdit("0.00")
         self.display.setAlignment(Qt.AlignRight)
         self.display.setFont(font)
-        self.display.setReadOnly(True)
+        self.display.setReadOnly(False)
         self.display.setFixedWidth(LINE_EDIT_WIDTH)
         self.row_layout.addWidget(self.display)
 
@@ -200,6 +200,7 @@ class JointStatePublisherGui(QMainWindow):
             self.scroll_layout.addWidget(slider)
             # Connect to the signal provided by QSignal
             slider.slider.valueChanged.connect(lambda event,name=name: self.onSliderValueChangedOne(name))
+            slider.display.textChanged.connect(lambda event,name=name: self.ondisplayChanged(name))
 
             self.sliders[slider] = slider
 
@@ -230,6 +231,14 @@ class JointStatePublisherGui(QMainWindow):
         joint = joint_info['joint']
         joint['position'] = self.sliderToValue(slidervalue, joint)
         joint_info['display'].setText("%.3f" % joint['position'])
+
+    def ondisplayChanged(self, name):
+        # A slider value was changed, but we need to change the joint_info metadata.
+        joint_info = self.joint_map[name]
+        slidervalue = float(joint_info['display'].text())
+        joint = joint_info['joint']
+        joint['position'] = self.sliderToValue(slidervalue, joint)
+#        joint_info['display'].setText("%.3f" % joint['position'])
 
     @pyqtSlot()
     def updateSliders(self):
